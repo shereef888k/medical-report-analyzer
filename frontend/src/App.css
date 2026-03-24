@@ -1,0 +1,260 @@
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
+
+.container {
+  max-width: 950px;
+  margin: auto;
+  padding: 30px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.upload-card,
+.file-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.upload-card {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.upload-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.selected-file {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.analyze-btn {
+  align-self: flex-start;
+}
+
+input[type="file"] {
+  color: white;
+  flex: 1;
+  min-width: 240px;
+}
+
+button {
+  background: #3b82f6;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.download-btn {
+  background: #10b981;
+}
+
+.download-btn:hover {
+  background: #059669;
+}
+
+table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.low {
+  color: #f87171;
+  font-weight: bold;
+}
+
+.normal {
+  color: #4ade80;
+  font-weight: bold;
+}
+
+.high {
+  color: #facc15;
+  font-weight: bold;
+}
+
+.badge.low {
+  background: rgba(248, 113, 113, 0.18);
+}
+
+.badge.normal {
+  background: rgba(74, 222, 128, 0.18);
+}
+
+.badge.high {
+  background: rgba(250, 204, 21, 0.18);
+}
+
+.risk {
+  font-weight: bold;
+  padding-left: 8px;
+}
+
+.risk.low {
+  color: #4ade80;
+}
+
+.risk.medium {
+  color: #facc15;
+}
+
+.risk.high {
+  color: #f87171;
+}
+
+.error-card {
+  border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+ul {
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+p {
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.chat-box {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.chat-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.mic-btn {
+  min-width: 90px;
+  font-size: 14px;
+  padding: 12px 14px;
+}
+
+.mic-btn.listening {
+  background: #ef4444;
+}
+
+.mic-btn.listening:hover {
+  background: #dc2626;
+}
+
+.chat-error {
+  margin-top: 14px;
+  color: #f87171;
+}
+
+.quick-questions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 10px 14px;
+  border-radius: 999px;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.chat-history {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.question-bubble,
+.answer-bubble {
+  padding: 14px;
+  border-radius: 14px;
+  line-height: 1.6;
+}
+
+.question-bubble {
+  background: rgba(59, 130, 246, 0.18);
+  align-self: flex-end;
+}
+
+.answer-bubble {
+  background: rgba(255, 255, 255, 0.08);
+  align-self: flex-start;
+}
