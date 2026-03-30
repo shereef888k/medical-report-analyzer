@@ -202,14 +202,6 @@ def analyze():
 
 
 # ---------------- CHAT ROUTE ----------------
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-    question = data.get("question")
-    report = data.get("report")
-
-    if not question:
-        return jsonify({"error": "No question provided"}), 400
 
 @app.route("/chat", methods=["POST"])
 def chat():
