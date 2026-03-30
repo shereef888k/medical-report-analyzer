@@ -20,6 +20,7 @@ app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 
 
+
 # ---------------- FILE CHECK ----------------
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -210,31 +211,18 @@ def chat():
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
-    try:
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": "phi3",
-                "prompt": f"""
-You are a medical assistant.
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.json
+    question = data.get("question")
+    report = data.get("report")
 
-Report:
-{report}
+    if not question:
+        return jsonify({"error": "No question provided"}), 400
 
-Question:
-{question}
-
-Give a short, clear answer.
-""",
-                "stream": False
-            }
-        )
-
-        result = response.json()
-        return jsonify({"answer": result.get("response", "")})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({
+        "answer": "Chat feature is temporarily unavailable. Backend is live, but AI server (Ollama) is not connected yet."
+    })
 
 
 # ---------------- HOME ----------------
