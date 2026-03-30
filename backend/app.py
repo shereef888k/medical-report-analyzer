@@ -22,6 +22,7 @@ app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 OLLAMA_URL = os.getenv("OLLAMA_URL", "https://ollama.com")
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 
+
 # ---------------- FILE CHECK ----------------
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -124,29 +125,40 @@ def analyze():
     })
 
 
-# ---------------- CHAT ROUTE (FIXED) ----------------
+# ---------------- CHAT ROUTE ----------------
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
-    question = data.get("question")
-    report = data.get("report")
+    data = request.get_json(silent=True) or {}
+    question = data.get("question", "").strip()
+    report = data.get("report", "").strip()
 
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
     if not OLLAMA_API_KEY:
-        return jsonify({"error": "Ollama API key not configured"}), 500
+        return jsonify({"error": "OLLAMA_API_KEY is not configured"}), 500
 
     prompt = f"""
-    You are a medical assistant.
-    Based on the report below, answer clearly.
+You are a medical assistant.
 
-    Report:
-    {report}
+Explain in very simple language.
 
-    Question:
-    {question}
-    """
+Rules:
+- Answer in 2 or 3 short lines only
+- No table
+- No bullet points
+- No markdown
+- No long explanation
+- Be clear and direct
+- If the report is unclear, say so simply
+- Do not say this is a final diagnosis
+
+Report:
+{report}
+
+Question:
+{question}
+"""
 
     try:
         response = requests.post(
@@ -158,16 +170,26 @@ def chat():
             json={
                 "model": "gpt-oss:20b",
                 "prompt": prompt,
-                "stream": False
+                "stream": False,
+                "options": {
+                    "num_predict": 80,
+                    "temperature": 0.2
+                }
             },
             timeout=60
         )
 
+        response.raise_for_status()
         result = response.json()
-        return jsonify({
-            "answer": result.get("response", "No response")
-        })
 
+        answer = result.get("response", "").strip()
+        if not answer:
+            answer = "Sorry, I could not generate an answer right now."
+
+        return jsonify({"answer": answer})
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"AI request failed: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
