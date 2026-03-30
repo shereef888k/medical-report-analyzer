@@ -18,8 +18,9 @@ ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg"}
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
-
-
+# ---------------- ENV ----------------
+OLLAMA_URL = os.getenv("OLLAMA_URL", "https://ollama.com")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 
 # ---------------- FILE CHECK ----------------
 def allowed_file(filename):
@@ -89,76 +90,6 @@ def analyze_report(text):
     return results
 
 
-# ---------------- SUMMARY ----------------
-def generate_summary(analysis):
-    if not analysis:
-        return "No important values detected."
-
-    abnormal = [i for i in analysis if i["status"] != "NORMAL"]
-
-    if not abnormal:
-        return "All major values are within normal range."
-
-    parts = []
-
-    for item in abnormal:
-        if item["test"] == "Hemoglobin" and item["status"] == "LOW":
-            parts.append("Low hemoglobin detected (possible anemia).")
-        elif item["test"] == "WBC" and item["status"] == "HIGH":
-            parts.append("Elevated WBC count (possible infection).")
-        elif item["test"] == "Platelets" and item["status"] == "LOW":
-            parts.append("Low platelet count detected.")
-
-    return " ".join(parts)
-
-
-# ---------------- SUGGESTIONS ----------------
-def generate_suggestions(analysis):
-    suggestions = []
-
-    for item in analysis:
-        if item["test"] == "Hemoglobin" and item["status"] == "LOW":
-            suggestions.append("Check iron levels and consult a doctor.")
-
-        if item["test"] == "WBC" and item["status"] == "HIGH":
-            suggestions.append("Possible infection. Medical review recommended.")
-
-        if item["test"] == "Platelets" and item["status"] == "LOW":
-            suggestions.append("Monitor for bleeding and consult a doctor.")
-
-    if not suggestions:
-        suggestions.append("No immediate concerns detected.")
-
-    return suggestions
-
-
-# ---------------- RISK ----------------
-def generate_risk_level(analysis):
-    risk = "LOW"
-
-    for item in analysis:
-        if item["status"] != "NORMAL":
-            risk = "MEDIUM"
-
-        if item["test"] == "WBC" and item["status"] == "HIGH":
-            risk = "HIGH"
-
-        if item["test"] == "Platelets" and item["status"] == "LOW":
-            risk = "HIGH"
-
-    return risk
-
-
-# ---------------- INSIGHT ----------------
-def generate_insight(analysis):
-    abnormal = [i for i in analysis if i["status"] != "NORMAL"]
-
-    if not abnormal:
-        return "No major health concerns detected."
-
-    return f"{len(abnormal)} abnormal value(s) detected. Review recommended."
-
-
 # ---------------- ANALYZE ROUTE ----------------
 @app.route("/analyze", methods=["POST"])
 def analyze():
@@ -185,24 +116,15 @@ def analyze():
     )
 
     analysis = analyze_report(extracted_text)
-    summary = generate_summary(analysis)
-    suggestions = generate_suggestions(analysis)
-    risk = generate_risk_level(analysis)
-    insight = generate_insight(analysis)
 
     return jsonify({
         "filename": filename,
         "extracted_text": extracted_text,
-        "analysis": analysis,
-        "summary": summary,
-        "suggestions": suggestions,
-        "risk": risk,
-        "insight": insight
+        "analysis": analysis
     })
 
 
-# ---------------- CHAT ROUTE ----------------
-
+# ---------------- CHAT ROUTE (FIXED) ----------------
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
@@ -212,9 +134,42 @@ def chat():
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
-    return jsonify({
-        "answer": "Chat feature is temporarily unavailable. Backend is live, but AI server (Ollama) is not connected yet."
-    })
+    if not OLLAMA_API_KEY:
+        return jsonify({"error": "Ollama API key not configured"}), 500
+
+    prompt = f"""
+    You are a medical assistant.
+    Based on the report below, answer clearly.
+
+    Report:
+    {report}
+
+    Question:
+    {question}
+    """
+
+    try:
+        response = requests.post(
+            f"{OLLAMA_URL}/api/generate",
+            headers={
+                "Authorization": f"Bearer {OLLAMA_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-oss:20b",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=60
+        )
+
+        result = response.json()
+        return jsonify({
+            "answer": result.get("response", "No response")
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- HOME ----------------
@@ -224,7 +179,6 @@ def home():
 
 
 if __name__ == "__main__":
-    import os
     os.makedirs("uploads", exist_ok=True)
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
