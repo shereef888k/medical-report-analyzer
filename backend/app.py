@@ -91,6 +91,48 @@ def analyze_report(text):
     return results
 
 
+# ---------------- RISK ----------------
+def generate_risk_level(analysis):
+    if not analysis:
+        return "UNKNOWN"
+
+    high_risk = False
+    medium_risk = False
+
+    for item in analysis:
+        test = item["test"]
+        value = float(item["value"])
+        status = item["status"]
+
+        if status != "NORMAL":
+            medium_risk = True
+
+        if test == "Hemoglobin":
+            if value < 8 or value > 20:
+                high_risk = True
+            elif value < 13 or value > 17:
+                medium_risk = True
+
+        elif test == "WBC":
+            if value < 2000 or value > 20000:
+                high_risk = True
+            elif value < 4000 or value > 11000:
+                medium_risk = True
+
+        elif test == "Platelets":
+            if value < 50000 or value > 1000000:
+                high_risk = True
+            elif value < 150000 or value > 410000:
+                medium_risk = True
+
+    if high_risk:
+        return "HIGH"
+    elif medium_risk:
+        return "MEDIUM"
+    else:
+        return "LOW"
+
+
 # ---------------- ANALYZE ROUTE ----------------
 @app.route("/analyze", methods=["POST"])
 def analyze():
@@ -117,11 +159,13 @@ def analyze():
     )
 
     analysis = analyze_report(extracted_text)
+    risk = generate_risk_level(analysis)
 
     return jsonify({
         "filename": filename,
         "extracted_text": extracted_text,
-        "analysis": analysis
+        "analysis": analysis,
+        "risk": risk
     })
 
 
